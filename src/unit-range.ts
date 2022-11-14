@@ -1,6 +1,6 @@
 import { ConfigType } from "dayjs"
 import { IUnit, Unit } from "./unit"
-import {  UnitID } from "./unit-id"
+import { UnitID } from "./unit-id"
 
 export class UnitIDRange {
     private constructor(
@@ -30,7 +30,26 @@ export class UnitIDRange {
 
     get end(): UnitID { return this._end }
 
-    get length(): number { return this._end.diff(this._start) + 1 }
+    get ids(): UnitID[] {
+        const ids: UnitID[] = []
+        let id = this._start.clone()
+        while (id.isBefore(this._end)) {
+            ids.push(id)
+            id = id.add(1)
+        }
+        ids.push(this._end.clone())
+        return ids
+    }
+
+    length(unit?: IUnit | Unit): number {
+        if (unit) {
+            const start = this._start.as(unit)
+            const end = this._end.as(unit)
+            return end.diff(start)
+        } else {
+            return this._end.diff(this._start) + 1
+        }
+    }
 
     add(count: number): UnitIDRange {
         return new UnitIDRange(this._start.add(count), this._end.add(count))
@@ -43,5 +62,9 @@ export class UnitIDRange {
     isIntersect(range: UnitIDRange): boolean {
         return this._start.isBefore(range._end) && this._end.isAfter(range._start) ||
             range._start.isBefore(this._end) && range._end.isAfter(this._start)
+    }
+
+    as(unit: IUnit | Unit) {
+
     }
 }

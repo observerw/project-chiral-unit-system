@@ -14,10 +14,13 @@ export class UnitID {
         switch (uType) {
             case 'century':
                 this._uid = hash([this._date.year() / 100])
+                break
             case 'decade':
                 this._uid = hash([this._date.year() / 10])
+                break
             default:
                 this._uid = hash(this.toArray())
+                break
         }
     }
 
