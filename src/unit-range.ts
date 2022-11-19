@@ -11,7 +11,7 @@ export class UnitIDRange {
     static fromUnitID(start: UnitID, end: UnitID): UnitIDRange {
         if (!start.unit.isSame(end.unit)) { throw new Error('UnitIDRange: start and end must be same unit') }
         if (end.isBefore(start)) { throw new Error('UnitIDRange: end must be after start') }
-        return new UnitIDRange(start, end)
+        return new UnitIDRange(start.clone(), end.clone())
     }
 
     static fromDayjs(start: ConfigType, end: ConfigType, unit: IUnit | Unit): UnitIDRange {

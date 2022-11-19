@@ -122,7 +122,7 @@ export class UnitID {
     get start(): UnitID {
         const uType = this._unit.toString()
         const lowerUnit = this._unit.lower
-        if (lowerUnit === undefined) { throw new Error("second don' t have sub unit") }
+        if (lowerUnit === undefined) { throw new Error("second don't have sub unit") }
         if (uType === 'century') {
             const year = this._date.year()
             return new UnitID(this._date.year(Math.floor(year / 100) * 100), lowerUnit)
@@ -134,12 +134,70 @@ export class UnitID {
         else { return new UnitID(this._date.startOf(uType), lowerUnit) }
     }
 
+    /// 获取当前单位同级单位的开头
+    get startSibling(): UnitID {
+        const uType = this._unit.toString()
+        switch (uType) {
+            case 'century':
+                throw new Error("century is unbouded")
+            case 'decade':
+                return new UnitID(this._date.year(Math.floor(this._date.year() / 100) * 100), this._unit)
+            case 'year':
+                return new UnitID(this._date.year(Math.floor(this._date.year() / 10) * 10), this._unit)
+            case 'month':
+                return new UnitID(this._date.month(0), this._unit)
+            case 'day':
+                return new UnitID(this._date.date(1), this._unit)
+            case 'hour':
+                return new UnitID(this._date.hour(0), this._unit)
+            case 'minute':
+                return new UnitID(this._date.minute(0), this._unit)
+            case 'second':
+                return new UnitID(this._date.second(0), this._unit)
+        }
+    }
+
+    get isStart(): boolean {
+        const uType = this._unit.toString()
+        if (uType === 'century') { return this._date.year() % 100 === 0 }
+        else if (uType === 'decade') { return this._date.year() % 10 === 0 }
+        else { return this._date.startOf(uType).isSame(this._date) }
+    }
+
     get end(): UnitID {
         const uType = this._unit.toString()
         const lowerUnit = this._unit.lower
         if (lowerUnit === undefined) { throw new Error("second don' t have sub unit") }
         if (uType === 'century' || uType === 'decade') { return this.start!.add(9) }
         else { return new UnitID(this._date.endOf(uType), lowerUnit) }
+    }
+
+    get endSibling(): UnitID {
+        const uType = this._unit.toString()
+        switch (uType) {
+            case 'century':
+                throw new Error("century is unbouded")
+            case 'decade':
+                return new UnitID(this._date.year(Math.floor(this._date.year() / 100) * 100 + 99), this._unit)
+            case 'year':
+                return new UnitID(this._date.year(Math.floor(this._date.year() / 10) * 10 + 9), this._unit)
+            case 'month':
+                return new UnitID(this._date.month(11), this._unit)
+            case 'day':
+                return new UnitID(this._date.endOf('month'), this._unit)
+            case 'hour':
+                return new UnitID(this._date.hour(23), this._unit)
+            case 'minute':
+                return new UnitID(this._date.minute(59), this._unit)
+            case 'second':
+                return new UnitID(this._date.second(59), this._unit)
+        }
+    }
+
+    get isEnd(): boolean {
+        const uType = this._unit.toString()
+        if (uType === 'century' || uType === 'decade') { return this._date.year() % 10 === 9 }
+        else { return this._date.endOf(uType).isSame(this._date) }
     }
 
     get uid(): string { return this._uid }
