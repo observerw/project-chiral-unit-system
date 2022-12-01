@@ -4,11 +4,14 @@ const LENGTH = 8
 export type IUnit = typeof UNITS[number]
 
 export class Unit {
-    private constructor(
-        private _order: number = 4,
+    public constructor(
+        public _order: number = 4,
     ) { }
 
-    static fromOrder(order: number) { return new Unit(order) }
+    static fromOrder(order: number) {
+        if (order >= LENGTH) { throw new Error(`expect order < ${LENGTH}, got ${order}`) }
+        return new Unit(order)
+    }
 
     static fromUnit(unit: IUnit | Unit) {
         if (typeof unit === 'string') {

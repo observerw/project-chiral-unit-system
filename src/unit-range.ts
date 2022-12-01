@@ -3,9 +3,9 @@ import { IUnit, Unit } from "./unit"
 import { UnitID } from "./unit-id"
 
 export class UnitIDRange {
-    private constructor(
-        private _start: UnitID,
-        private _end: UnitID
+    public constructor(
+        public _start: UnitID,
+        public _end: UnitID
     ) { }
 
     static fromUnitID(start: UnitID, end: UnitID): UnitIDRange {

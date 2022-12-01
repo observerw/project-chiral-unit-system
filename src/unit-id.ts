@@ -4,12 +4,13 @@ import { memoize } from './memoize'
 import { IUnit, Unit, UNITS } from './unit'
 
 export class UnitID {
-    private _uid: string
+    _uid: string
 
-    private constructor(
-        private _date: Dayjs,
-        private _unit: Unit,
+    constructor(
+        public _date: Dayjs,
+        public _unit: Unit,
     ) {
+        if (!_date.isValid()) { throw new Error('UnitID fromDayjs: invalid date') }
         const uType = this._unit.toString()
         switch (uType) {
             case 'century':
@@ -24,7 +25,9 @@ export class UnitID {
         }
     }
 
-    static fromDayjs(date: ConfigType, unit: IUnit | Unit) { return new UnitID(Date(date), Unit.fromUnit(unit)) }
+    static fromDayjs(dateConfig: ConfigType, unit: IUnit | Unit) {
+        return new UnitID(Date(dateConfig), Unit.fromUnit(unit))
+    }
 
     static fromArray(date: number[]): UnitID {
         if (date.length === 0) {
@@ -33,6 +36,7 @@ export class UnitID {
             const unit = Unit.fromOrder(date.length - 1)
             const [century, decade, year, ...rest] = date
             const realYear = (century - 1) * 100 + (decade ?? 0) * 10 + (year ?? 0)
+ 
             return new UnitID(Date([realYear, ...rest] as (number[] & { length: 7 })), unit)
         }
     }
@@ -105,7 +109,7 @@ export class UnitID {
     get prev(): UnitID { return this.sub(1) }
 
     diff(date: UnitID, milliSecond = false): number {
-        if (this._unit.toString() !== date._unit.toString()) { throw new Error('UnitID diff: unit not match') }
+        if (!this._unit.isSame(date._unit)) { throw new Error('UnitID diff: unit not match') }
 
         if (milliSecond) { return this._date.diff(date._date, 'millisecond') }
 
@@ -122,7 +126,7 @@ export class UnitID {
     get start(): UnitID {
         const uType = this._unit.toString()
         const lowerUnit = this._unit.lower
-        if (lowerUnit === undefined) { throw new Error("second don't have sub unit") }
+        if (lowerUnit === undefined) { throw new Error("UnitID start: second don't have sub unit") }
         if (uType === 'century') {
             const year = this._date.year()
             return new UnitID(this._date.year(Math.floor(year / 100) * 100), lowerUnit)
@@ -139,7 +143,7 @@ export class UnitID {
         const uType = this._unit.toString()
         switch (uType) {
             case 'century':
-                throw new Error("century is unbouded")
+                throw new Error("UnitID s tartSibling: century is unbouded")
             case 'decade':
                 return new UnitID(this._date.year(Math.floor(this._date.year() / 100) * 100), this._unit)
             case 'year':
@@ -167,7 +171,7 @@ export class UnitID {
     get end(): UnitID {
         const uType = this._unit.toString()
         const lowerUnit = this._unit.lower
-        if (lowerUnit === undefined) { throw new Error("second don' t have sub unit") }
+        if (lowerUnit === undefined) { throw new Error("UnitID end: second don' t have sub unit") }
         if (uType === 'century' || uType === 'decade') { return this.start!.add(9) }
         else { return new UnitID(this._date.endOf(uType), lowerUnit) }
     }
@@ -176,7 +180,7 @@ export class UnitID {
         const uType = this._unit.toString()
         switch (uType) {
             case 'century':
-                throw new Error("century is unbouded")
+                throw new Error("UnitID endSibling: century is unbouded")
             case 'decade':
                 return new UnitID(this._date.year(Math.floor(this._date.year() / 100) * 100 + 99), this._unit)
             case 'year':
@@ -205,7 +209,7 @@ export class UnitID {
     @memoize
     get parent(): UnitID {
         const upperUnit = this._unit.upper
-        if (!upperUnit) { throw new Error('UnitID parent: no parent') }
+        if (!upperUnit) { throw new Error('UnitID parent: century has no parent') }
         return this.as(upperUnit)
     }
 
@@ -309,5 +313,9 @@ export class UnitID {
             default:
                 return this._date.isBetween(startDate, endDate, uType, d)
         }
+    }
+
+    isValid(): boolean {
+        return this._date.isValid()
     }
 }
