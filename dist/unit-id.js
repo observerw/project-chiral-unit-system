@@ -18,7 +18,7 @@ class UnitID {
     constructor(_date, _unit) {
         this._date = _date;
         this._unit = _unit;
-        if (!_date.isValid()) {
+        if (_date === undefined || !_date.isValid()) {
             throw new Error('UnitID fromDayjs: invalid date');
         }
         const uType = this._unit.toString();

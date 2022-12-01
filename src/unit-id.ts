@@ -10,7 +10,7 @@ export class UnitID {
         public _date: Dayjs,
         public _unit: Unit,
     ) {
-        if (!_date.isValid()) { throw new Error('UnitID fromDayjs: invalid date') }
+        if (_date === undefined || !_date.isValid()) { throw new Error('UnitID fromDayjs: invalid date') }
         const uType = this._unit.toString()
         switch (uType) {
             case 'century':
