@@ -42,26 +42,30 @@ export class UnitID {
     }
 
     static deserialize(id: string): UnitID {
-        const [unitAndYear, padded] = id.split('_')
-        const unit = Unit.fromOrder(parseInt(unitAndYear[0]))
-        const year = parseInt(unitAndYear.slice(1))
+        try {
+            const [unitAndYear, padded] = id.split('_')
+            const unit = Unit.fromOrder(parseInt(unitAndYear[0]))
+            const year = parseInt(unitAndYear.slice(1))
 
-        const parsed = Array(padded.length / 2).fill(0).map((_, i) => padded.slice(i * 2, i * 2 + 2)).map(v => parseInt(v))
+            const parsed = Array(padded.length / 2).fill(0).map((_, i) => padded.slice(i * 2, i * 2 + 2)).map(v => parseInt(v))
 
-        const uType = unit.toString()
-        switch (uType) {
-            case 'century':
-                return new UnitID(Date([year * 100, 0, 1, 0, 0, 0, 0]), unit)
-            case 'decade':
-                return new UnitID(Date([year * 10, 0, 1, 0, 0, 0, 0]), unit)
-            case 'year':
-                return new UnitID(Date([year, 0, 1, 0, 0, 0, 0]), unit)
-            case 'month':
-                // date 从 1 开始
-                return new UnitID(Date([year, parsed[0], 1, 0, 0, 0, 0]), unit)
-            default:
-                const filled = [...parsed, ...Array(6 - parsed.length).fill(0)]
-                return new UnitID(Date([year, ...filled] as (number[] & { length: 7 })), unit)
+            const uType = unit.toString()
+            switch (uType) {
+                case 'century':
+                    return new UnitID(Date([year * 100, 0, 1, 0, 0, 0, 0]), unit)
+                case 'decade':
+                    return new UnitID(Date([year * 10, 0, 1, 0, 0, 0, 0]), unit)
+                case 'year':
+                    return new UnitID(Date([year, 0, 1, 0, 0, 0, 0]), unit)
+                case 'month':
+                    // date 从 1 开始
+                    return new UnitID(Date([year, parsed[0], 1, 0, 0, 0, 0]), unit)
+                default:
+                    const filled = [...parsed, ...Array(6 - parsed.length).fill(0)]
+                    return new UnitID(Date([year, ...filled] as (number[] & { length: 7 })), unit)
+            }
+        } catch (e) {
+            throw new Error(`UnitID fromDayjs: ${e}`)
         }
     }
 
