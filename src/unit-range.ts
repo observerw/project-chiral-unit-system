@@ -3,27 +3,38 @@ import { IUnit, Unit } from "./unit"
 import { UnitID } from "./unit-id"
 
 export class UnitIDRange {
-    public constructor(
-        public _start: UnitID,
-        public _end: UnitID
-    ) { }
+    readonly _unit: Unit
+
+    constructor(
+        readonly _start: UnitID,
+        readonly _end: UnitID
+    ) {
+        if (!_start.unit.isSame(_end.unit)) { throw new Error('UnitIDRange: start and end must be same unit') }
+
+        this._unit = _start.unit
+        this._start = this._start.start
+        this._end = this._end.end
+    }
 
     static fromUnitID(start: UnitID, end: UnitID): UnitIDRange {
-        if (!start.unit.isSame(end.unit)) { throw new Error('UnitIDRange: start and end must be same unit') }
-        if (end.isBefore(start)) { throw new Error('UnitIDRange: end must be after start') }
-        return new UnitIDRange(start.clone(), end.clone())
+        if (start.isBefore(end)) {
+            return new UnitIDRange(start, end)
+        } else {
+            return new UnitIDRange(end, start)
+        }
     }
 
     static fromDayjs(start: ConfigType, end: ConfigType, unit: IUnit | Unit): UnitIDRange {
         return new UnitIDRange(UnitID.fromDayjs(start, unit), UnitID.fromDayjs(end, unit))
     }
 
-    static deserialize([start, end]: [string, string]): UnitIDRange {
-        return new UnitIDRange(UnitID.deserialize(start), UnitID.deserialize(end))
+    static deserialize(str: string): UnitIDRange {
+        const [unit, start, end] = str.split('_')
+        return UnitIDRange.fromDayjs(start, end, Unit.fromOrder(parseInt(unit)))
     }
 
-    serialize(): [string, string] {
-        return [this._start.serialize(), this._end.serialize()]
+    serialize() {
+        return `${this._unit.order}_${this._start._date.format()}_${this._end._date.format()}`
     }
 
     get start(): UnitID { return this._start }
@@ -32,16 +43,16 @@ export class UnitIDRange {
 
     get ids(): UnitID[] {
         const ids: UnitID[] = []
-        let id = this._start.clone()
+        let id = this._start
         while (id.isBefore(this._end)) {
             ids.push(id)
             id = id.add(1)
         }
-        ids.push(this._end.clone())
+        ids.push(this._end)
         return ids
     }
 
-    length(unit?: IUnit | Unit): number {
+    length(unit?: IUnit | Unit) {
         if (unit) {
             const start = this._start.as(unit)
             const end = this._end.as(unit)
@@ -59,12 +70,12 @@ export class UnitIDRange {
         return new UnitIDRange(this._start.sub(count), this._end.sub(count))
     }
 
-    isIntersect(range: UnitIDRange): boolean {
-        return this._start.isBefore(range._end) && this._end.isAfter(range._start) ||
-            range._start.isBefore(this._end) && range._end.isAfter(this._start)
+    as(unit: IUnit | Unit): UnitIDRange {
+        return new UnitIDRange(this._start.as(unit), this._end.as(unit))
     }
 
-    as(unit: IUnit | Unit) {
-
+    isIntersect(range: UnitIDRange) {
+        return this._start.isBefore(range._end) && this._end.isAfter(range._start) ||
+            range._start.isBefore(this._end) && range._end.isAfter(this._start)
     }
 }

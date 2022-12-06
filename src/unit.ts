@@ -1,23 +1,25 @@
-export const UNITS = ['century', 'decade', 'year', 'month', 'day', 'hour', 'minute', 'second'] as const
+export const UNITS = ['century', 'decade', 'year', 'month', 'date', 'hour', 'minute', 'second'] as const
 const LENGTH = 8
 
 export type IUnit = typeof UNITS[number]
 
 export class Unit {
-    public constructor(
-        public _order: number = 4,
-    ) { }
+    constructor(
+        readonly _order: number = 4,
+    ) {
+        if (_order >= LENGTH) { throw new Error(`expect order < ${LENGTH}, got ${_order}`) }
+    }
 
     static fromOrder(order: number) {
-        if (order >= LENGTH) { throw new Error(`expect order < ${LENGTH}, got ${order}`) }
         return new Unit(order)
     }
 
     static fromUnit(unit: IUnit | Unit) {
         if (typeof unit === 'string') {
+            if (!UNITS.includes(unit)) { throw new Error(`expect unit in ${UNITS}, got ${unit}`) }
             return new Unit(UNITS.indexOf(unit))
         } else {
-            return unit.clone()
+            return unit
         }
     }
 
@@ -47,6 +49,4 @@ export class Unit {
     }
 
     toString() { return UNITS[this._order] }
-
-    clone() { return new Unit(this._order) }
 }
