@@ -1,41 +1,42 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnitIDRange = void 0;
+const exception_1 = require("./exception");
+const unit_1 = require("./unit");
 const unit_id_1 = require("./unit-id");
 class UnitIDRange {
     constructor(_start, _end) {
         this._start = _start;
         this._end = _end;
+        if (!_start.unit.isSame(_end.unit)) {
+            throw new exception_1.UnitIDException('UnitIDRange', 'unit not match');
+        }
+        this._unit = _start.unit;
+        this._start = this._start.start;
+        this._end = this._end.end;
     }
     static fromUnitID(start, end) {
-        if (!start.unit.isSame(end.unit)) {
-            throw new Error('UnitIDRange: start and end must be same unit');
+        if (start.isBefore(end)) {
+            return new UnitIDRange(start, end);
         }
-        if (end.isBefore(start)) {
-            throw new Error('UnitIDRange: end must be after start');
+        else {
+            return new UnitIDRange(end, start);
         }
-        return new UnitIDRange(start.clone(), end.clone());
     }
     static fromDayjs(start, end, unit) {
         return new UnitIDRange(unit_id_1.UnitID.fromDayjs(start, unit), unit_id_1.UnitID.fromDayjs(end, unit));
     }
-    static deserialize([start, end]) {
-        return new UnitIDRange(unit_id_1.UnitID.deserialize(start), unit_id_1.UnitID.deserialize(end));
+    static deserialize(str) {
+        const [unit, start, end] = str.split('_');
+        return UnitIDRange.fromDayjs(start, end, unit_1.Unit.fromOrder(parseInt(unit)));
     }
     serialize() {
-        return [this._start.serialize(), this._end.serialize()];
+        return `${this._unit.order}_${this._start._date.format()}_${this._end._date.format()}`;
     }
     get start() { return this._start; }
     get end() { return this._end; }
     get ids() {
-        const ids = [];
-        let id = this._start.clone();
-        while (id.isBefore(this._end)) {
-            ids.push(id);
-            id = id.add(1);
-        }
-        ids.push(this._end.clone());
-        return ids;
+        return Array(this._end.diff(this._start) + 1).fill(0).map((_, i) => this._start.add(i));
     }
     length(unit) {
         if (unit) {
@@ -53,11 +54,19 @@ class UnitIDRange {
     sub(count) {
         return new UnitIDRange(this._start.sub(count), this._end.sub(count));
     }
+    as(unit) {
+        return new UnitIDRange(this._start.as(unit), this._end.as(unit));
+    }
     isIntersect(range) {
         return this._start.isBefore(range._end) && this._end.isAfter(range._start) ||
             range._start.isBefore(this._end) && range._end.isAfter(this._start);
     }
-    as(unit) {
+    toJSON() {
+        return {
+            unit: this._unit._order,
+            start: this._start._date.format(),
+            end: this._end._date.format()
+        };
     }
 }
 exports.UnitIDRange = UnitIDRange;

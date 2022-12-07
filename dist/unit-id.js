@@ -12,96 +12,59 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnitID = void 0;
 const dayjs_1 = __importDefault(require("dayjs"));
 const object_hash_1 = __importDefault(require("object-hash"));
+const exception_1 = require("./exception");
 const memoize_1 = require("./memoize");
 const unit_1 = require("./unit");
+const unit_range_1 = require("./unit-range");
 class UnitID {
     constructor(_date, _unit) {
         this._date = _date;
         this._unit = _unit;
-        if (_date === undefined || !_date.isValid()) {
-            throw new Error('UnitID fromDayjs: invalid date');
+        if (!_date.isValid()) {
+            throw new exception_1.UnitIDException('UnitID', 'invalid date');
         }
         const uType = this._unit.toString();
+        const century = this._date.year() / 100;
+        const decade = this._date.year() / 10;
         switch (uType) {
             case 'century':
-                this._uid = (0, object_hash_1.default)([this._date.year() / 100]);
+                this._uid = (0, object_hash_1.default)([century]);
                 break;
             case 'decade':
-                this._uid = (0, object_hash_1.default)([this._date.year() / 10]);
+                this._uid = (0, object_hash_1.default)([century, decade]);
                 break;
             default:
-                this._uid = (0, object_hash_1.default)(this.toArray());
+                const rest = unit_1.UNITS.slice(2, this._unit._order + 1).map(unit => this._date.get(unit));
+                this._uid = (0, object_hash_1.default)([century, decade, ...rest]);
                 break;
         }
     }
     static fromDayjs(dateConfig, unit) {
         return new UnitID((0, dayjs_1.default)(dateConfig), unit_1.Unit.fromUnit(unit));
     }
-    static fromArray(date) {
-        if (date.length === 0) {
-            return new UnitID((0, dayjs_1.default)(), unit_1.Unit.fromUnit('day'));
+    static deserialize(str) {
+        const [unit, config] = str.split('_');
+        const unitOrder = parseInt(unit);
+        if (config === undefined || unitOrder === NaN) {
+            throw new exception_1.UnitIDException('UnitID deserialize', 'invalid format');
         }
-        else {
-            const unit = unit_1.Unit.fromOrder(date.length - 1);
-            const [century, decade, year, ...rest] = date;
-            const realYear = (century - 1) * 100 + (decade !== null && decade !== void 0 ? decade : 0) * 10 + (year !== null && year !== void 0 ? year : 0);
-            return new UnitID((0, dayjs_1.default)([realYear, ...rest]), unit);
-        }
-    }
-    static deserialize(id) {
-        try {
-            const [unitAndYear, padded] = id.split('_');
-            const unit = unit_1.Unit.fromOrder(parseInt(unitAndYear[0]));
-            const year = parseInt(unitAndYear.slice(1));
-            const parsed = Array(padded.length / 2).fill(0).map((_, i) => padded.slice(i * 2, i * 2 + 2)).map(v => parseInt(v));
-            const uType = unit.toString();
-            switch (uType) {
-                case 'century':
-                    return new UnitID((0, dayjs_1.default)([year * 100, 0, 1, 0, 0, 0, 0]), unit);
-                case 'decade':
-                    return new UnitID((0, dayjs_1.default)([year * 10, 0, 1, 0, 0, 0, 0]), unit);
-                case 'year':
-                    return new UnitID((0, dayjs_1.default)([year, 0, 1, 0, 0, 0, 0]), unit);
-                case 'month':
-                    // date 从 1 开始
-                    return new UnitID((0, dayjs_1.default)([year, parsed[0], 1, 0, 0, 0, 0]), unit);
-                default:
-                    const filled = [...parsed, ...Array(6 - parsed.length).fill(0)];
-                    return new UnitID((0, dayjs_1.default)([year, ...filled]), unit);
-            }
-        }
-        catch (e) {
-            throw new Error(`UnitID fromDayjs: ${e}`);
-        }
+        return new UnitID((0, dayjs_1.default)(config), unit_1.Unit.fromOrder(parseInt(unit)));
     }
     serialize() {
-        const [year, ...rest] = this.toArray();
-        const unitOrder = `${this._unit.order}`;
-        const padded = rest.map(v => `${v}`.padStart(2, '0')).join('');
+        return `${this._unit.order}_${this._date.format()}`;
+    }
+    as(unit) { return new UnitID(this._date, unit_1.Unit.fromUnit(unit)); }
+    add(value) {
         const uType = this._unit.toString();
         switch (uType) {
             case 'century':
-                return `${unitOrder}${year / 100}`;
+                return new UnitID(this._date.add(value * 100, 'year'), this._unit);
             case 'decade':
-                return `${unitOrder}${year / 10}`;
-            case 'year':
-                return `${unitOrder}${year}`;
+                return new UnitID(this._date.add(value * 10, 'year'), this._unit);
+            case 'date':
+                return new UnitID(this._date.add(value, 'day'), this._unit);
             default:
-                return `${unitOrder}${year}_${padded}`;
-        }
-    }
-    as(unit) { return new UnitID(this._date.clone(), unit_1.Unit.fromUnit(unit)); }
-    clone() { return new UnitID(this._date.clone(), this._unit); }
-    add(value) {
-        const uType = this._unit.toString();
-        if (uType === 'century') {
-            return new UnitID(this._date.add(value * 100, 'year'), this._unit);
-        }
-        else if (uType === 'decade') {
-            return new UnitID(this._date.add(value * 10, 'year'), this._unit);
-        }
-        else {
-            return new UnitID(this._date.add(value, uType), this._unit);
+                return new UnitID(this._date.add(value, uType), this._unit);
         }
     }
     sub(value) { return this.add(-value); }
@@ -111,7 +74,7 @@ class UnitID {
     get prev() { return this.sub(1); }
     diff(date, milliSecond = false) {
         if (!this._unit.isSame(date._unit)) {
-            throw new Error('UnitID diff: unit not match');
+            throw new exception_1.UnitIDException('UnitID diff', 'unit not match');
         }
         if (milliSecond) {
             return this._date.diff(date._date, 'millisecond');
@@ -119,55 +82,28 @@ class UnitID {
         const uType = this._unit.toString();
         const start = date._date;
         const end = this._date;
-        if (uType === 'century') {
-            return Math.floor(end.diff(start, 'year') / 100);
-        }
-        else if (uType === 'decade') {
-            return Math.floor(end.diff(start, 'year') / 10);
-        }
-        else {
-            return end.diff(start, uType);
+        switch (uType) {
+            case 'century':
+                return Math.floor(end.diff(start, 'year') / 100);
+            case 'decade':
+                return Math.floor(end.diff(start, 'year') / 10);
+            case 'date':
+                return end.diff(start, 'day');
+            default:
+                return end.diff(start, uType);
         }
     }
-    /// 获取当前单位的开头，同时将当前单位下降一级
     get start() {
-        const uType = this._unit.toString();
-        const lowerUnit = this._unit.lower;
-        if (lowerUnit === undefined) {
-            throw new Error("UnitID start: second don't have sub unit");
-        }
-        if (uType === 'century') {
-            const year = this._date.year();
-            return new UnitID(this._date.year(Math.floor(year / 100) * 100), lowerUnit);
-        }
-        else if (uType === 'decade') {
-            const year = this._date.year();
-            return new UnitID(this._date.year(Math.floor(year / 10) * 10), lowerUnit);
-        }
-        else {
-            return new UnitID(this._date.startOf(uType), lowerUnit);
-        }
-    }
-    /// 获取当前单位同级单位的开头
-    get startSibling() {
         const uType = this._unit.toString();
         switch (uType) {
             case 'century':
-                throw new Error("UnitID s tartSibling: century is unbouded");
+                const century = Math.floor(this._date.year() / 100) * 100;
+                return new UnitID(this._date.startOf('year').year(century), this._unit);
             case 'decade':
-                return new UnitID(this._date.year(Math.floor(this._date.year() / 100) * 100), this._unit);
-            case 'year':
-                return new UnitID(this._date.year(Math.floor(this._date.year() / 10) * 10), this._unit);
-            case 'month':
-                return new UnitID(this._date.month(0), this._unit);
-            case 'day':
-                return new UnitID(this._date.date(1), this._unit);
-            case 'hour':
-                return new UnitID(this._date.hour(0), this._unit);
-            case 'minute':
-                return new UnitID(this._date.minute(0), this._unit);
-            case 'second':
-                return new UnitID(this._date.second(0), this._unit);
+                const decade = Math.floor(this._date.year() / 10) * 10;
+                return new UnitID(this._date.startOf('year').year(decade), this._unit);
+            default:
+                return new UnitID(this._date.startOf(uType), this._unit);
         }
     }
     get isStart() {
@@ -184,41 +120,23 @@ class UnitID {
     }
     get end() {
         const uType = this._unit.toString();
-        const lowerUnit = this._unit.lower;
-        if (lowerUnit === undefined) {
-            throw new Error("UnitID end: second don' t have sub unit");
-        }
-        if (uType === 'century' || uType === 'decade') {
-            return this.start.add(9);
-        }
-        else {
-            return new UnitID(this._date.endOf(uType), lowerUnit);
-        }
-    }
-    get endSibling() {
-        const uType = this._unit.toString();
         switch (uType) {
             case 'century':
-                throw new Error("UnitID endSibling: century is unbouded");
+                const century = Math.floor(this._date.year() / 100) * 100 + 99;
+                return new UnitID(this._date.endOf('year').year(century), this._unit);
             case 'decade':
-                return new UnitID(this._date.year(Math.floor(this._date.year() / 100) * 100 + 99), this._unit);
-            case 'year':
-                return new UnitID(this._date.year(Math.floor(this._date.year() / 10) * 10 + 9), this._unit);
-            case 'month':
-                return new UnitID(this._date.month(11), this._unit);
-            case 'day':
-                return new UnitID(this._date.endOf('month'), this._unit);
-            case 'hour':
-                return new UnitID(this._date.hour(23), this._unit);
-            case 'minute':
-                return new UnitID(this._date.minute(59), this._unit);
-            case 'second':
-                return new UnitID(this._date.second(59), this._unit);
+                const decade = Math.floor(this._date.year() / 10) * 10 + 9;
+                return new UnitID(this._date.endOf('year').year(decade), this._unit);
+            default:
+                return new UnitID(this._date.endOf(uType), this._unit);
         }
     }
     get isEnd() {
         const uType = this._unit.toString();
-        if (uType === 'century' || uType === 'decade') {
+        if (uType === 'century') {
+            return this._date.year() % 100 === 99;
+        }
+        else if (uType === 'decade') {
             return this._date.year() % 10 === 9;
         }
         else {
@@ -229,26 +147,24 @@ class UnitID {
     get parent() {
         const upperUnit = this._unit.upper;
         if (!upperUnit) {
-            throw new Error('UnitID parent: century has no parent');
+            throw new exception_1.UnitIDException('UnitID parent', 'century has no parent');
         }
         return this.as(upperUnit);
     }
-    get children() {
-        const start = this.start;
-        const end = this.end;
-        if (!start || !end) {
-            return [];
+    get childrenRange() {
+        const lowerUnit = this._unit.lower;
+        if (!lowerUnit) {
+            throw new exception_1.UnitIDException('UnitID childrenRange', 'second has no children');
         }
-        return Array(end.diff(start) + 1).fill(0).map((_, i) => start.add(i));
+        const start = this.start.as(lowerUnit);
+        const end = this.end.as(lowerUnit);
+        return new unit_range_1.UnitIDRange(start, end);
+    }
+    get children() {
+        return this.childrenRange.ids;
     }
     toString() {
-        let startIdx;
-        if (this._unit.isLower('decade')) {
-            startIdx = 2;
-        } // 单位在年以下，只显示年份，不显示世纪
-        else {
-            startIdx = 0;
-        }
+        const startIdx = this._unit.isLower('decade') ? 2 : 0; // 单位在年以下，只显示年份，不显示世纪
         return unit_1.UNITS.slice(startIdx, this._unit.order + 1).map(unit => this.as(unit).toUnitString()).join('');
     }
     toUnitString() {
@@ -268,7 +184,7 @@ class UnitID {
                 return `${this._date.year()}年`;
             case 'month':
                 return `${this._date.month() + 1}月`;
-            case 'day':
+            case 'date':
                 return `${this._date.date()}日`;
             case 'hour':
                 return `${this._date.hour()}时`;
@@ -288,16 +204,6 @@ class UnitID {
                 return `${this.children[0]}代`;
             default:
                 return `${this.parent.toUnitString()}${this.toUnitString()}`;
-        }
-    }
-    toArray() {
-        const array = [this._date.year(), this._date.month(), this._date.date(), this._date.hour(), this._date.minute(), this._date.second()];
-        const order = this._unit.order;
-        if (order <= 2) {
-            return [array[0]];
-        }
-        else {
-            return array.slice(0, order - 1);
         }
     }
     isBefore(date) {

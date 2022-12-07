@@ -1,4 +1,5 @@
 import { ConfigType } from "dayjs"
+import { UnitIDException } from "./exception"
 import { IUnit, Unit } from "./unit"
 import { UnitID } from "./unit-id"
 
@@ -9,7 +10,9 @@ export class UnitIDRange {
         readonly _start: UnitID,
         readonly _end: UnitID
     ) {
-        if (!_start.unit.isSame(_end.unit)) { throw new Error('UnitIDRange: start and end must be same unit') }
+        if (!_start.unit.isSame(_end.unit)) {
+            throw new UnitIDException('UnitIDRange', 'unit not match')
+        }
 
         this._unit = _start.unit
         this._start = this._start.start
@@ -42,14 +45,7 @@ export class UnitIDRange {
     get end(): UnitID { return this._end }
 
     get ids(): UnitID[] {
-        const ids: UnitID[] = []
-        let id = this._start
-        while (id.isBefore(this._end)) {
-            ids.push(id)
-            id = id.add(1)
-        }
-        ids.push(this._end)
-        return ids
+        return Array(this._end.diff(this._start) + 1).fill(0).map((_, i) => this._start.add(i))
     }
 
     length(unit?: IUnit | Unit) {
@@ -77,5 +73,13 @@ export class UnitIDRange {
     isIntersect(range: UnitIDRange) {
         return this._start.isBefore(range._end) && this._end.isAfter(range._start) ||
             range._start.isBefore(this._end) && range._end.isAfter(this._start)
+    }
+
+    toJSON() {
+        return {
+            unit: this._unit._order,
+            start: this._start._date.format(),
+            end: this._end._date.format()
+        }
     }
 }

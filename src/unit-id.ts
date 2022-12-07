@@ -1,16 +1,20 @@
 import Date, { ConfigType, Dayjs, UnitType } from 'dayjs'
 import hash from 'object-hash'
+import { UnitIDException } from './exception'
 import { memoize } from './memoize'
 import { IUnit, Unit, UNITS } from './unit'
+import { UnitIDRange } from './unit-range'
 
 export class UnitID {
-    readonly _uid
+    readonly _uid: string
 
     constructor(
         readonly _date: Dayjs,
         readonly _unit: Unit,
     ) {
-        if (!_date.isValid()) { throw new Error('UnitID fromDayjs: invalid date') }
+        if (!_date.isValid()) {
+            throw new UnitIDException('UnitID', 'invalid date')
+        }
         const uType = this._unit.toString()
         const century = this._date.year() / 100
         const decade = this._date.year() / 10
@@ -34,6 +38,10 @@ export class UnitID {
 
     static deserialize(str: string): UnitID {
         const [unit, config] = str.split('_')
+        const unitOrder = parseInt(unit)
+        if (config === undefined || unitOrder === NaN) {
+            throw new UnitIDException('UnitID deserialize', 'invalid format')
+        }
         return new UnitID(Date(config), Unit.fromOrder(parseInt(unit)))
     }
 
@@ -68,7 +76,9 @@ export class UnitID {
     get prev(): UnitID { return this.sub(1) }
 
     diff(date: UnitID, milliSecond = false): number {
-        if (!this._unit.isSame(date._unit)) { throw new Error('UnitID diff: unit not match') }
+        if (!this._unit.isSame(date._unit)) {
+            throw new UnitIDException('UnitID diff', 'unit not match')
+        }
 
         if (milliSecond) { return this._date.diff(date._date, 'millisecond') }
 
@@ -88,7 +98,6 @@ export class UnitID {
         }
     }
 
-    /// 获取当前单位的开头
     get start(): UnitID {
         const uType = this._unit.toString()
         switch (uType) {
@@ -136,18 +145,25 @@ export class UnitID {
     @memoize
     get parent(): UnitID {
         const upperUnit = this._unit.upper
-        if (!upperUnit) { throw new Error('UnitID parent: century has no parent') }
+        if (!upperUnit) {
+            throw new UnitIDException('UnitID parent', 'century has no parent')
+        }
         return this.as(upperUnit)
+    }
+
+    get childrenRange(): UnitIDRange {
+        const lowerUnit = this._unit.lower
+        if (!lowerUnit) {
+            throw new UnitIDException('UnitID childrenRange', 'second has no children')
+        }
+        const start = this.start.as(lowerUnit)
+        const end = this.end.as(lowerUnit)
+        return new UnitIDRange(start, end)
     }
 
     @memoize
     get children(): UnitID[] {
-        const lowerUnit = this._unit.lower
-        if (!lowerUnit) { throw new Error('UnitID children: second has no children') }
-        const start = this.start.as(lowerUnit)
-        const end = this.end.as(lowerUnit)
-
-        return Array(end.diff(start) + 1).fill(0).map((_, i) => start.add(i))
+        return this.childrenRange.ids
     }
 
     toString() {

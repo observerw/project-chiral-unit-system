@@ -1,3 +1,5 @@
+import { UnitIDException } from "./exception"
+
 export const UNITS = ['century', 'decade', 'year', 'month', 'date', 'hour', 'minute', 'second'] as const
 const LENGTH = 8
 
@@ -7,7 +9,9 @@ export class Unit {
     constructor(
         readonly _order: number = 4,
     ) {
-        if (_order >= LENGTH) { throw new Error(`expect order < ${LENGTH}, got ${_order}`) }
+        if (_order < 0 || _order >= LENGTH) {
+            throw new UnitIDException('Unit', `expect 0 < order < ${LENGTH}, got ${_order}`)
+        }
     }
 
     static fromOrder(order: number) {
@@ -16,7 +20,7 @@ export class Unit {
 
     static fromUnit(unit: IUnit | Unit) {
         if (typeof unit === 'string') {
-            if (!UNITS.includes(unit)) { throw new Error(`expect unit in ${UNITS}, got ${unit}`) }
+            if (!UNITS.includes(unit)) { throw new UnitIDException('Unit fromUnit', `expect unit in ${UNITS}, got ${unit}`) }
             return new Unit(UNITS.indexOf(unit))
         } else {
             return unit

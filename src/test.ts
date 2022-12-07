@@ -1,10 +1,6 @@
 import { UnitID } from "./unit-id";
 import './dayjs.config'
 
-// console.log(dayjs('2022-09-01').endOf('year'));
+// console.log(UnitID.fromDayjs('2022-09-01', 'date').children.map(v => `${v}`));
 
-
-const d = UnitID.fromDayjs('2022-09-27', 'date')
-
-
-console.log(d.children.map(c => `${c}`));
+console.log(UnitID.deserialize('5_2022'));
