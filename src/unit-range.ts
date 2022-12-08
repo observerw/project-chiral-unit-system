@@ -45,17 +45,13 @@ export class UnitIDRange {
     get end(): UnitID { return this._end }
 
     get ids(): UnitID[] {
-        return Array(this._end.diff(this._start) + 1).fill(0).map((_, i) => this._start.add(i))
+        return Array(this._end.diff(this._start) + 1)
+            .fill(0)
+            .map((_, i) => this._start.add(i))
     }
 
-    length(unit?: IUnit | Unit) {
-        if (unit) {
-            const start = this._start.as(unit)
-            const end = this._end.as(unit)
-            return end.diff(start)
-        } else {
-            return this._end.diff(this._start) + 1
-        }
+    length() {
+        return this._end.diff(this._start) + 1
     }
 
     add(count: number): UnitIDRange {
@@ -78,8 +74,8 @@ export class UnitIDRange {
     toJSON() {
         return {
             unit: this._unit._order,
-            start: this._start._date.format(),
-            end: this._end._date.format()
+            start: this._start._date.toDate(),
+            end: this._end._date.toDate()
         }
     }
 }

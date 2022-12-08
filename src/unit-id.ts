@@ -39,7 +39,7 @@ export class UnitID {
     static deserialize(str: string): UnitID {
         const [unit, config] = str.split('_')
         const unitOrder = parseInt(unit)
-        if (config === undefined || unitOrder === NaN) {
+        if (config === undefined || isNaN(unitOrder)) {
             throw new UnitIDException('UnitID deserialize', 'invalid format')
         }
         return new UnitID(Date(config), Unit.fromOrder(parseInt(unit)))
@@ -206,6 +206,13 @@ export class UnitID {
                 return `${this.children[0]}代`
             default:
                 return `${this.parent.toUnitString()}${this.toUnitString()}`
+        }
+    }
+
+    toJSON() {
+        return {
+            unit: this._unit.order,
+            date: this._date.toDate(),
         }
     }
 
