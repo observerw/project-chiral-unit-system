@@ -36,6 +36,14 @@ export class UnitID {
         return new UnitID(Date(dateConfig), Unit.fromUnit(unit))
     }
 
+    static lowerBound() {
+        return this.fromDayjs('-271821', 'century')
+    }
+
+    static upperBound() {
+        return this.fromDayjs('275759', 'century')
+    }
+
     static deserialize(str: string): UnitID {
         const [unit, config] = str.split('_')
         const unitOrder = parseInt(unit)

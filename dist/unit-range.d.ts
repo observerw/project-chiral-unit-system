@@ -13,14 +13,14 @@ export declare class UnitIDRange {
     get start(): UnitID;
     get end(): UnitID;
     get ids(): UnitID[];
-    length(unit?: IUnit | Unit): number;
+    length(): number;
     add(count: number): UnitIDRange;
     sub(count: number): UnitIDRange;
     as(unit: IUnit | Unit): UnitIDRange;
     isIntersect(range: UnitIDRange): boolean;
     toJSON(): {
         unit: number;
-        start: string;
-        end: string;
+        start: Date;
+        end: Date;
     };
 }

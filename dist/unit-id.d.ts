@@ -28,6 +28,10 @@ export declare class UnitID {
     toString(): string;
     toUnitString(): string;
     toBriefString(): string;
+    toJSON(): {
+        unit: number;
+        date: Date;
+    };
     isBefore(date: UnitID): boolean;
     isAfter(date: UnitID): boolean;
     isSame({ _date, _unit }: UnitID): boolean;

@@ -15,6 +15,26 @@ export class UnitIDRange {
         }
 
         this._unit = _start.unit
+        while (this._unit.upper !== undefined) {
+            const upper = this._unit.upper.toString()
+
+            let diff
+            switch (upper) {
+                case 'century':
+                    diff = Math.floor((this._end._date.year() - this._start._date.year()) / 100)
+                    break
+                case 'decade':
+                    diff = Math.floor((this._end._date.year() - this._start._date.year()) / 10)
+                    break
+                default:
+                    diff = this._end._date.diff(this._start._date, upper)
+                    break
+            }
+
+            if (diff === 0) { break }
+            this._unit = this._unit.upper
+        }
+
         this._start = this._start.start
         this._end = this._end.end
     }
@@ -31,6 +51,10 @@ export class UnitIDRange {
         return new UnitIDRange(UnitID.fromDayjs(start, unit), UnitID.fromDayjs(end, unit))
     }
 
+    static unbounded(): UnitIDRange {
+        return this.fromDayjs('-271821', '275759', 'century')
+    }
+
     static deserialize(str: string): UnitIDRange {
         const [unit, start, end] = str.split('_')
         return UnitIDRange.fromDayjs(start, end, Unit.fromOrder(parseInt(unit)))
@@ -43,6 +67,8 @@ export class UnitIDRange {
     get start(): UnitID { return this._start }
 
     get end(): UnitID { return this._end }
+
+    get unit(): Unit { return this._unit }
 
     get ids(): UnitID[] {
         return Array(this._end.diff(this._start) + 1)

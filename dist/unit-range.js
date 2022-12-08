@@ -36,17 +36,12 @@ class UnitIDRange {
     get start() { return this._start; }
     get end() { return this._end; }
     get ids() {
-        return Array(this._end.diff(this._start) + 1).fill(0).map((_, i) => this._start.add(i));
+        return Array(this._end.diff(this._start) + 1)
+            .fill(0)
+            .map((_, i) => this._start.add(i));
     }
-    length(unit) {
-        if (unit) {
-            const start = this._start.as(unit);
-            const end = this._end.as(unit);
-            return end.diff(start);
-        }
-        else {
-            return this._end.diff(this._start) + 1;
-        }
+    length() {
+        return this._end.diff(this._start) + 1;
     }
     add(count) {
         return new UnitIDRange(this._start.add(count), this._end.add(count));
@@ -64,8 +59,8 @@ class UnitIDRange {
     toJSON() {
         return {
             unit: this._unit._order,
-            start: this._start._date.format(),
-            end: this._end._date.format()
+            start: this._start._date.toDate(),
+            end: this._end._date.toDate()
         };
     }
 }

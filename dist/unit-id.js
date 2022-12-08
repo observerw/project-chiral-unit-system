@@ -45,7 +45,7 @@ class UnitID {
     static deserialize(str) {
         const [unit, config] = str.split('_');
         const unitOrder = parseInt(unit);
-        if (config === undefined || unitOrder === NaN) {
+        if (config === undefined || isNaN(unitOrder)) {
             throw new exception_1.UnitIDException('UnitID deserialize', 'invalid format');
         }
         return new UnitID((0, dayjs_1.default)(config), unit_1.Unit.fromOrder(parseInt(unit)));
@@ -205,6 +205,12 @@ class UnitID {
             default:
                 return `${this.parent.toUnitString()}${this.toUnitString()}`;
         }
+    }
+    toJSON() {
+        return {
+            unit: this._unit.order,
+            date: this._date.toDate(),
+        };
     }
     isBefore(date) {
         if (!this._unit.isSame(date._unit)) {
