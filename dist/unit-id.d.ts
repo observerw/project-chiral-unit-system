@@ -7,6 +7,8 @@ export declare class UnitID {
     readonly _uid: string;
     constructor(_date: Dayjs, _unit: Unit);
     static fromDayjs(dateConfig: ConfigType, unit: IUnit | Unit): UnitID;
+    static lowerBound(): UnitID;
+    static upperBound(): UnitID;
     static deserialize(str: string): UnitID;
     serialize(): string;
     as(unit: IUnit | Unit): UnitID;
@@ -17,14 +19,22 @@ export declare class UnitID {
     get next(): UnitID;
     get prev(): UnitID;
     diff(date: UnitID, milliSecond?: boolean): number;
+    /**
+     * 获取当前时间单位下的最小时间，即：当前时间单位以下的时间全部设置为最小值
+     */
     get start(): UnitID;
     get isStart(): boolean;
+    /**
+     * 获取当前时间单位下的最大时间，即：当前时间单位以下的时间全部设置为最大值
+     */
     get end(): UnitID;
     get isEnd(): boolean;
     get uid(): string;
     get parent(): UnitID;
     get childrenRange(): UnitIDRange;
     get children(): UnitID[];
+    get firstChild(): UnitID;
+    get lastChild(): UnitID;
     toString(): string;
     toUnitString(): string;
     toBriefString(): string;

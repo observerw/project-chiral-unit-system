@@ -8,10 +8,12 @@ export declare class UnitIDRange {
     constructor(_start: UnitID, _end: UnitID);
     static fromUnitID(start: UnitID, end: UnitID): UnitIDRange;
     static fromDayjs(start: ConfigType, end: ConfigType, unit: IUnit | Unit): UnitIDRange;
+    static unbounded(): UnitIDRange;
     static deserialize(str: string): UnitIDRange;
     serialize(): string;
     get start(): UnitID;
     get end(): UnitID;
+    get unit(): Unit;
     get ids(): UnitID[];
     length(): number;
     add(count: number): UnitIDRange;

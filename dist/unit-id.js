@@ -42,6 +42,12 @@ class UnitID {
     static fromDayjs(dateConfig, unit) {
         return new UnitID((0, dayjs_1.default)(dateConfig), unit_1.Unit.fromUnit(unit));
     }
+    static lowerBound() {
+        return this.fromDayjs('-271821', 'century');
+    }
+    static upperBound() {
+        return this.fromDayjs('275759', 'century');
+    }
     static deserialize(str) {
         const [unit, config] = str.split('_');
         const unitOrder = parseInt(unit);
@@ -93,6 +99,9 @@ class UnitID {
                 return end.diff(start, uType);
         }
     }
+    /**
+     * 获取当前时间单位下的最小时间，即：当前时间单位以下的时间全部设置为最小值
+     */
     get start() {
         const uType = this._unit.toString();
         switch (uType) {
@@ -118,6 +127,9 @@ class UnitID {
             return this._date.startOf(uType).isSame(this._date);
         }
     }
+    /**
+     * 获取当前时间单位下的最大时间，即：当前时间单位以下的时间全部设置为最大值
+     */
     get end() {
         const uType = this._unit.toString();
         switch (uType) {
@@ -162,6 +174,20 @@ class UnitID {
     }
     get children() {
         return this.childrenRange.ids;
+    }
+    get firstChild() {
+        const lowerUnit = this._unit.lower;
+        if (!lowerUnit) {
+            throw new exception_1.UnitIDException('UnitID firstChild', 'second has no children');
+        }
+        return this.start.as(lowerUnit);
+    }
+    get lastChild() {
+        const lowerUnit = this._unit.lower;
+        if (!lowerUnit) {
+            throw new exception_1.UnitIDException('UnitID lastChild', 'second has no children');
+        }
+        return this.end.as(lowerUnit);
     }
     toString() {
         const startIdx = this._unit.isLower('decade') ? 2 : 0; // 单位在年以下，只显示年份，不显示世纪

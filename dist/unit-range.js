@@ -12,6 +12,25 @@ class UnitIDRange {
             throw new exception_1.UnitIDException('UnitIDRange', 'unit not match');
         }
         this._unit = _start.unit;
+        while (this._unit.upper !== undefined) {
+            const upper = this._unit.upper.toString();
+            let diff;
+            switch (upper) {
+                case 'century':
+                    diff = Math.floor((this._end._date.year() - this._start._date.year()) / 100);
+                    break;
+                case 'decade':
+                    diff = Math.floor((this._end._date.year() - this._start._date.year()) / 10);
+                    break;
+                default:
+                    diff = this._end._date.diff(this._start._date, upper);
+                    break;
+            }
+            if (diff === 0) {
+                break;
+            }
+            this._unit = this._unit.upper;
+        }
         this._start = this._start.start;
         this._end = this._end.end;
     }
@@ -26,6 +45,9 @@ class UnitIDRange {
     static fromDayjs(start, end, unit) {
         return new UnitIDRange(unit_id_1.UnitID.fromDayjs(start, unit), unit_id_1.UnitID.fromDayjs(end, unit));
     }
+    static unbounded() {
+        return this.fromDayjs('-271821', '275759', 'century');
+    }
     static deserialize(str) {
         const [unit, start, end] = str.split('_');
         return UnitIDRange.fromDayjs(start, end, unit_1.Unit.fromOrder(parseInt(unit)));
@@ -35,6 +57,7 @@ class UnitIDRange {
     }
     get start() { return this._start; }
     get end() { return this._end; }
+    get unit() { return this._unit; }
     get ids() {
         return Array(this._end.diff(this._start) + 1)
             .fill(0)

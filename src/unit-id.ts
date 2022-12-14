@@ -106,6 +106,9 @@ export class UnitID {
         }
     }
 
+    /**
+     * 获取当前时间单位下的最小时间，即：当前时间单位以下的时间全部设置为最小值
+     */
     get start(): UnitID {
         const uType = this._unit.toString()
         switch (uType) {
@@ -127,6 +130,9 @@ export class UnitID {
         else { return this._date.startOf(uType).isSame(this._date) }
     }
 
+    /**
+     * 获取当前时间单位下的最大时间，即：当前时间单位以下的时间全部设置为最大值
+     */
     get end(): UnitID {
         const uType = this._unit.toString()
         switch (uType) {
@@ -172,6 +178,22 @@ export class UnitID {
     @memoize
     get children(): UnitID[] {
         return this.childrenRange.ids
+    }
+
+    get firstChild() {
+        const lowerUnit = this._unit.lower
+        if (!lowerUnit) {
+            throw new UnitIDException('UnitID firstChild', 'second has no children')
+        }
+        return this.start.as(lowerUnit)
+    }
+
+    get lastChild() {
+        const lowerUnit = this._unit.lower
+        if (!lowerUnit) {
+            throw new UnitIDException('UnitID lastChild', 'second has no children')
+        }
+        return this.end.as(lowerUnit)
     }
 
     toString() {
