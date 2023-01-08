@@ -51,8 +51,20 @@ export class UnitIDRange {
         return new UnitIDRange(UnitID.fromDayjs(start, unit), UnitID.fromDayjs(end, unit))
     }
 
-    static unbounded(): UnitIDRange {
-        return this.fromDayjs('-271821', '275759', 'century')
+    static fromJSON({ unit, start, end }: {
+        unit: number,
+        start: Date,
+        end: Date
+    }): UnitIDRange {
+        return UnitIDRange.fromDayjs(start, end, Unit.fromOrder(unit))
+    }
+
+    toJSON() {
+        return {
+            unit: this._unit._order,
+            start: this._start._date.toDate(),
+            end: this._end._date.toDate()
+        }
     }
 
     static deserialize(str: string): UnitIDRange {
@@ -95,13 +107,5 @@ export class UnitIDRange {
     isIntersect(range: UnitIDRange) {
         return this._start.isBefore(range._end) && this._end.isAfter(range._start) ||
             range._start.isBefore(this._end) && range._end.isAfter(this._start)
-    }
-
-    toJSON() {
-        return {
-            unit: this._unit._order,
-            start: this._start._date.toDate(),
-            end: this._end._date.toDate()
-        }
     }
 }
