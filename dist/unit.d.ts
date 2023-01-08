@@ -1,5 +1,5 @@
 export declare const UNITS: readonly ["century", "decade", "year", "month", "date", "hour", "minute", "second"];
-export declare type IUnit = typeof UNITS[number];
+export type IUnit = typeof UNITS[number];
 export declare class Unit {
     readonly _order: number;
     constructor(_order?: number);

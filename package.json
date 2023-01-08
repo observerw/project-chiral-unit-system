@@ -2,7 +2,7 @@
   "name": "@project-chiral/unit-system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "license": "MIT",
   "scripts": {
     "build": "tsc",

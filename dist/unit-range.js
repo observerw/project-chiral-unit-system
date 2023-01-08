@@ -45,8 +45,15 @@ class UnitIDRange {
     static fromDayjs(start, end, unit) {
         return new UnitIDRange(unit_id_1.UnitID.fromDayjs(start, unit), unit_id_1.UnitID.fromDayjs(end, unit));
     }
-    static unbounded() {
-        return this.fromDayjs('-271821', '275759', 'century');
+    static fromJSON({ unit, start, end }) {
+        return UnitIDRange.fromDayjs(start, end, unit_1.Unit.fromOrder(unit));
+    }
+    toJSON() {
+        return {
+            unit: this._unit._order,
+            start: this._start._date.toDate(),
+            end: this._end._date.toDate()
+        };
     }
     static deserialize(str) {
         const [unit, start, end] = str.split('_');
@@ -78,13 +85,6 @@ class UnitIDRange {
     isIntersect(range) {
         return this._start.isBefore(range._end) && this._end.isAfter(range._start) ||
             range._start.isBefore(this._end) && range._end.isAfter(this._start);
-    }
-    toJSON() {
-        return {
-            unit: this._unit._order,
-            start: this._start._date.toDate(),
-            end: this._end._date.toDate()
-        };
     }
 }
 exports.UnitIDRange = UnitIDRange;

@@ -8,7 +8,16 @@ export declare class UnitIDRange {
     constructor(_start: UnitID, _end: UnitID);
     static fromUnitID(start: UnitID, end: UnitID): UnitIDRange;
     static fromDayjs(start: ConfigType, end: ConfigType, unit: IUnit | Unit): UnitIDRange;
-    static unbounded(): UnitIDRange;
+    static fromJSON({ unit, start, end }: {
+        unit: number;
+        start: Date;
+        end: Date;
+    }): UnitIDRange;
+    toJSON(): {
+        unit: number;
+        start: Date;
+        end: Date;
+    };
     static deserialize(str: string): UnitIDRange;
     serialize(): string;
     get start(): UnitID;
@@ -20,9 +29,4 @@ export declare class UnitIDRange {
     sub(count: number): UnitIDRange;
     as(unit: IUnit | Unit): UnitIDRange;
     isIntersect(range: UnitIDRange): boolean;
-    toJSON(): {
-        unit: number;
-        start: Date;
-        end: Date;
-    };
 }
