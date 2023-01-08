@@ -15,7 +15,7 @@ export declare class UnitIDRange {
     get end(): UnitID;
     get unit(): Unit;
     get ids(): UnitID[];
-    length(): number;
+    get length(): number;
     add(count: number): UnitIDRange;
     sub(count: number): UnitIDRange;
     as(unit: IUnit | Unit): UnitIDRange;

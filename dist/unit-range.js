@@ -63,7 +63,7 @@ class UnitIDRange {
             .fill(0)
             .map((_, i) => this._start.add(i));
     }
-    length() {
+    get length() {
         return this._end.diff(this._start) + 1;
     }
     add(count) {
