@@ -18,6 +18,7 @@ export declare class UnitIDRange {
         start: Date;
         end: Date;
     };
+    toDate(): Date[];
     static deserialize(str: string): UnitIDRange;
     serialize(): string;
     get start(): UnitID;

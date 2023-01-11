@@ -55,6 +55,9 @@ class UnitIDRange {
             end: this._end._date.toDate()
         };
     }
+    toDate() {
+        return [this._start.toDate(), this._end.toDate()];
+    }
     static deserialize(str) {
         const [unit, start, end] = str.split('_');
         return UnitIDRange.fromDayjs(start, end, unit_1.Unit.fromOrder(parseInt(unit)));

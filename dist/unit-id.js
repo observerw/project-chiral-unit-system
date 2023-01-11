@@ -238,6 +238,9 @@ class UnitID {
             date: this._date.toDate(),
         };
     }
+    toDate() {
+        return this._date.toDate();
+    }
     isBefore(date) {
         if (!this._unit.isSame(date._unit)) {
             return false;

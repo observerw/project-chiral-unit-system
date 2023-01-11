@@ -42,6 +42,7 @@ export declare class UnitID {
         unit: number;
         date: Date;
     };
+    toDate(): Date;
     isBefore(date: UnitID): boolean;
     isAfter(date: UnitID): boolean;
     isSame({ _date, _unit }: UnitID): boolean;
