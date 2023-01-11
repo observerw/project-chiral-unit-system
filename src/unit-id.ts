@@ -246,6 +246,10 @@ export class UnitID {
         }
     }
 
+    toDate() {
+        return this._date.toDate()
+    }
+
     isBefore(date: UnitID) {
         if (!this._unit.isSame(date._unit)) { return false }
         return this._date.isBefore(date._date)

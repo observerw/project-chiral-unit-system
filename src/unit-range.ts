@@ -67,6 +67,10 @@ export class UnitIDRange {
         }
     }
 
+    toDate() {
+        return [this._start.toDate(), this._end.toDate()]
+    }
+
     static deserialize(str: string): UnitIDRange {
         const [unit, start, end] = str.split('_')
         return UnitIDRange.fromDayjs(start, end, Unit.fromOrder(parseInt(unit)))
