@@ -79,8 +79,10 @@ export class UnitID {
 
     get unit() { return this._unit }
 
+    @memoize
     get next(): UnitID { return this.add(1) }
 
+    @memoize
     get prev(): UnitID { return this.sub(1) }
 
     diff(date: UnitID, milliSecond = false): number {
@@ -109,6 +111,7 @@ export class UnitID {
     /**
      * 获取当前时间单位下的最小时间，即：当前时间单位以下的时间全部设置为最小值
      */
+    @memoize
     get start(): UnitID {
         const uType = this._unit.toString()
         switch (uType) {
@@ -133,6 +136,7 @@ export class UnitID {
     /**
      * 获取当前时间单位下的最大时间，即：当前时间单位以下的时间全部设置为最大值
      */
+    @memoize
     get end(): UnitID {
         const uType = this._unit.toString()
         switch (uType) {
@@ -165,6 +169,7 @@ export class UnitID {
         return this.as(upperUnit)
     }
 
+    @memoize
     get childrenRange(): UnitIDRange {
         const lowerUnit = this._unit.lower
         if (!lowerUnit) {
@@ -176,10 +181,16 @@ export class UnitID {
     }
 
     @memoize
+    get range() {
+        return UnitIDRange.fromUnitID(this.parent, this.parent).as(this._unit)
+    }
+
+    @memoize
     get children(): UnitID[] {
         return this.childrenRange.ids
     }
 
+    @memoize
     get firstChild() {
         const lowerUnit = this._unit.lower
         if (!lowerUnit) {
@@ -188,6 +199,7 @@ export class UnitID {
         return this.start.as(lowerUnit)
     }
 
+    @memoize
     get lastChild() {
         const lowerUnit = this._unit.lower
         if (!lowerUnit) {
@@ -196,11 +208,13 @@ export class UnitID {
         return this.end.as(lowerUnit)
     }
 
+    @memoize
     toString() {
         const startIdx = this._unit.isLower('decade') ? 2 : 0 // 单位在年以下，只显示年份，不显示世纪
         return UNITS.slice(startIdx, this._unit.order + 1).map(unit => this.as(unit).toUnitString()).join('')
     }
 
+    @memoize
     toUnitString() {
         const uType = this._unit.toString()
         switch (uType) {
@@ -225,6 +239,7 @@ export class UnitID {
         }
     }
 
+    @memoize
     toBriefString() {
         const uType = this._unit.toString()
 

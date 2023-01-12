@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.memoize = void 0;
 // @ts-nocheck
-const memoize = (target, key, descriptor) => {
+const memoize = (_target, key, descriptor) => {
     const fType = descriptor.get ? 'get' : 'value';
     const fn = descriptor[fType];
     const char0 = String.fromCharCode(0);

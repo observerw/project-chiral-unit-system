@@ -1,5 +1,5 @@
 // @ts-nocheck
-export const memoize = <T>(target: any, key: string, descriptor: TypedPropertyDescriptor<T>): TypedPropertyDescriptor<T> => {
+export const memoize = <T>(_target: any, key: string, descriptor: TypedPropertyDescriptor<T>): TypedPropertyDescriptor<T> => {
     const fType = descriptor.get ? 'get' : 'value'
     const fn = descriptor[fType]
     const char0 = String.fromCharCode(0)

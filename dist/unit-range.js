@@ -1,7 +1,14 @@
 "use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnitIDRange = void 0;
 const exception_1 = require("./exception");
+const memoize_1 = require("./memoize");
 const unit_1 = require("./unit");
 const unit_id_1 = require("./unit-id");
 class UnitIDRange {
@@ -90,4 +97,10 @@ class UnitIDRange {
             range._start.isBefore(this._end) && range._end.isAfter(this._start);
     }
 }
+__decorate([
+    memoize_1.memoize
+], UnitIDRange.prototype, "ids", null);
+__decorate([
+    memoize_1.memoize
+], UnitIDRange.prototype, "length", null);
 exports.UnitIDRange = UnitIDRange;

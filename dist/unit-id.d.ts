@@ -32,6 +32,7 @@ export declare class UnitID {
     get uid(): string;
     get parent(): UnitID;
     get childrenRange(): UnitIDRange;
+    get range(): UnitIDRange;
     get children(): UnitID[];
     get firstChild(): UnitID;
     get lastChild(): UnitID;

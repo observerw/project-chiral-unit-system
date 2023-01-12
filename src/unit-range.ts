@@ -1,5 +1,6 @@
 import { ConfigType } from "dayjs"
 import { UnitIDException } from "./exception"
+import { memoize } from "./memoize"
 import { IUnit, Unit } from "./unit"
 import { UnitID } from "./unit-id"
 
@@ -86,12 +87,14 @@ export class UnitIDRange {
 
     get unit(): Unit { return this._unit }
 
+    @memoize
     get ids(): UnitID[] {
         return Array(this._end.diff(this._start) + 1)
             .fill(0)
             .map((_, i) => this._start.add(i))
     }
 
+    @memoize
     get length() {
         return this._end.diff(this._start) + 1
     }

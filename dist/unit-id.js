@@ -172,6 +172,9 @@ class UnitID {
         const end = this.end.as(lowerUnit);
         return new unit_range_1.UnitIDRange(start, end);
     }
+    get range() {
+        return unit_range_1.UnitIDRange.fromUnitID(this.parent, this.parent).as(this._unit);
+    }
     get children() {
         return this.childrenRange.ids;
     }
@@ -288,8 +291,41 @@ class UnitID {
 }
 __decorate([
     memoize_1.memoize
+], UnitID.prototype, "next", null);
+__decorate([
+    memoize_1.memoize
+], UnitID.prototype, "prev", null);
+__decorate([
+    memoize_1.memoize
+], UnitID.prototype, "start", null);
+__decorate([
+    memoize_1.memoize
+], UnitID.prototype, "end", null);
+__decorate([
+    memoize_1.memoize
 ], UnitID.prototype, "parent", null);
 __decorate([
     memoize_1.memoize
+], UnitID.prototype, "childrenRange", null);
+__decorate([
+    memoize_1.memoize
+], UnitID.prototype, "range", null);
+__decorate([
+    memoize_1.memoize
 ], UnitID.prototype, "children", null);
+__decorate([
+    memoize_1.memoize
+], UnitID.prototype, "firstChild", null);
+__decorate([
+    memoize_1.memoize
+], UnitID.prototype, "lastChild", null);
+__decorate([
+    memoize_1.memoize
+], UnitID.prototype, "toString", null);
+__decorate([
+    memoize_1.memoize
+], UnitID.prototype, "toUnitString", null);
+__decorate([
+    memoize_1.memoize
+], UnitID.prototype, "toBriefString", null);
 exports.UnitID = UnitID;
